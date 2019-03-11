@@ -38,6 +38,8 @@ public class GenerateSRG extends DefaultTask {
     private MappingFile.Format format = MappingFile.Format.TSRG;
     private boolean reverse;
     private File output = getProject().file("build/" + getName() + "/output.tsrg");
+    private File outputSRG = withExtension(this.output, "srg");
+    private String targetMappings;
 
     @TaskAction
     public void apply() throws IOException {
@@ -49,15 +51,28 @@ public class GenerateSRG extends DefaultTask {
         MappingFile obf_to_srg = MappingFile.load(srg);
         MappingFile ret = new MappingFile();
         McpNames map = McpNames.load(names);
-        obf_to_srg.getPackages().forEach(e -> ret.addPackage(e.getMapped(), e.getMapped()));
-        obf_to_srg.getClasses().forEach(cls -> {
-           ret.addClass(cls.getMapped(), cls.getMapped());
-           MappingFile.Cls _cls = ret.getClass(cls.getMapped());
-           cls.getFields().forEach(fld -> _cls.addField(fld.getMapped(), map.rename(fld.getMapped())));
-           cls.getMethods().forEach(mtd -> _cls.addMethod(mtd.getMapped(), mtd.getMappedDescriptor(), map.rename(mtd.getMapped())));
-        });
+
+        if (isNotch()) {
+            obf_to_srg.getPackages().forEach(e -> ret.addPackage(e.getOriginal(), e.getMapped()));
+            obf_to_srg.getClasses().forEach(cls -> {
+                ret.addClass(cls.getOriginal(), cls.getMapped());
+                MappingFile.Cls _cls = ret.getClass(cls.getOriginal());
+                cls.getFields().forEach(fld -> _cls.addField(fld.getOriginal(), map.rename(fld.getMapped())));
+                cls.getMethods().forEach(mtd -> _cls.addMethod(mtd.getOriginal(), mtd.getDescriptor(), map.rename(mtd.getMapped())));
+            });
+        } else {
+            obf_to_srg.getPackages().forEach(e -> ret.addPackage(e.getMapped(), e.getMapped()));
+            obf_to_srg.getClasses().forEach(cls -> {
+                ret.addClass(cls.getMapped(), cls.getMapped());
+                MappingFile.Cls _cls = ret.getClass(cls.getMapped());
+                cls.getFields().forEach(fld -> _cls.addField(fld.getMapped(), map.rename(fld.getMapped())));
+                cls.getMethods().forEach(mtd -> _cls.addMethod(mtd.getMapped(), mtd.getMappedDescriptor(), map.rename(mtd.getMapped())));
+            });
+        }
 
         ret.write(getFormat(), getOutput(), getReverse());
+        // Also create SRG file because we're disgusting
+        ret.write(MappingFile.Format.SRG, this.outputSRG, getReverse());
     }
 
     private File findNames(String mapping) {
@@ -67,6 +82,16 @@ public class GenerateSRG extends DefaultTask {
         String version = mapping.substring(idx + 1);
         String desc = "de.oceanlabs.mcp:mcp_" + channel + ":" + version + "@zip";
         return MavenArtifactDownloader.manual(getProject(), desc, false);
+    }
+
+    private File withExtension(File file, String extension) {
+        int i = file.getName().lastIndexOf('.');
+        String name = file.getName().substring(0, i);
+        return new File(file.getParent(), name + "." + extension);
+    }
+
+    private boolean isNotch() {
+        return getTargetMappings().equals("notch");
     }
 
     @InputFile
@@ -83,6 +108,14 @@ public class GenerateSRG extends DefaultTask {
     }
     public void setMappings(String value) {
         this.mapping = value;
+    }
+
+    @Input
+    public String getTargetMappings() {
+        return targetMappings;
+    }
+    public void setTargetMappings(String value) {
+        this.targetMappings = value;
     }
 
     @Input
@@ -107,5 +140,6 @@ public class GenerateSRG extends DefaultTask {
     }
     public void setOutput(File value) {
         this.output = value;
+        this.outputSRG = withExtension(this.output, "srg");
     }
 }

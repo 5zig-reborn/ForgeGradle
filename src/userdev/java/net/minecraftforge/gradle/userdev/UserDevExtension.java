@@ -29,6 +29,8 @@ public class UserDevExtension extends MinecraftExtension {
 
     public static final String EXTENSION_NAME = "minecraft";
 
+    private String reobfMappings = "searge";
+
     public UserDevExtension(@Nonnull final Project project) {
         super(project);
     }
@@ -38,4 +40,15 @@ public class UserDevExtension extends MinecraftExtension {
         setMappings(channel + "_" + version);
     }
 
+    public void setReobfMappings(String mappings) {
+        if (mappings.equals("searge") || mappings.equals("notch")) {
+            this.reobfMappings = mappings;
+            return;
+        }
+        throw new IllegalArgumentException("Invalid mappings type specified");
+    }
+
+    public String getReobfMappings() {
+        return this.reobfMappings;
+    }
 }
