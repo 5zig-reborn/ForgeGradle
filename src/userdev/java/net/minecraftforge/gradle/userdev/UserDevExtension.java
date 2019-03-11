@@ -20,6 +20,7 @@
 
 package net.minecraftforge.gradle.userdev;
 
+import net.minecraftforge.gradle.common.util.MappingFile;
 import net.minecraftforge.gradle.common.util.MinecraftExtension;
 import org.gradle.api.Project;
 
@@ -29,7 +30,7 @@ public class UserDevExtension extends MinecraftExtension {
 
     public static final String EXTENSION_NAME = "minecraft";
 
-    private String reobfMappings = "searge";
+    private MappingFile.Mapping reobfMappings = MappingFile.Mapping.SEARGE;
 
     public UserDevExtension(@Nonnull final Project project) {
         super(project);
@@ -41,14 +42,14 @@ public class UserDevExtension extends MinecraftExtension {
     }
 
     public void setReobfMappings(String mappings) {
-        if (mappings.equals("searge") || mappings.equals("notch")) {
-            this.reobfMappings = mappings;
-            return;
+        this.reobfMappings = MappingFile.Mapping.get(mappings);
+
+        if (this.reobfMappings == null || this.reobfMappings == MappingFile.Mapping.MCP) {
+            throw new IllegalArgumentException("Mapping type must be either SEARGE or NOTCH");
         }
-        throw new IllegalArgumentException("Invalid mappings type specified");
     }
 
-    public String getReobfMappings() {
+    public MappingFile.Mapping getReobfMappings() {
         return this.reobfMappings;
     }
 }

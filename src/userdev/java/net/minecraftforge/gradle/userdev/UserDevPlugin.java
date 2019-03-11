@@ -25,10 +25,7 @@ import net.minecraftforge.gradle.common.task.DownloadMCMeta;
 import net.minecraftforge.gradle.common.task.DownloadMavenArtifact;
 import net.minecraftforge.gradle.common.task.ExtractMCPData;
 import net.minecraftforge.gradle.common.task.ExtractNatives;
-import net.minecraftforge.gradle.common.util.BaseRepo;
-import net.minecraftforge.gradle.common.util.MinecraftRepo;
-import net.minecraftforge.gradle.common.util.Utils;
-import net.minecraftforge.gradle.common.util.VersionJson;
+import net.minecraftforge.gradle.common.util.*;
 import net.minecraftforge.gradle.mcp.MCPRepo;
 import net.minecraftforge.gradle.userdev.tasks.GenerateSRG;
 import net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace;
@@ -118,7 +115,7 @@ public class UserDevPlugin implements Plugin<Project> {
             task.dependsOn(extractSrg);
             task.setSrg(extractSrg.get().getOutput());
             task.setMappings(extension.getMappings());
-            task.setTargetMappings("searge");
+            task.setTarget(MappingFile.Mapping.SEARGE);
         });
 
         createMcpToObf.configure(task -> {
@@ -126,7 +123,7 @@ public class UserDevPlugin implements Plugin<Project> {
             task.dependsOn(extractSrg);
             task.setSrg(extractSrg.get().getOutput());
             task.setMappings(extension.getMappings());
-            task.setTargetMappings("notch");
+            task.setTarget(MappingFile.Mapping.NOTCH);
         });
 
         extractNatives.configure(task -> {
@@ -201,7 +198,7 @@ public class UserDevPlugin implements Plugin<Project> {
             downloadMCMeta.get().setMCVersion(mcVer);
 
             // The actual task that is required for the current context
-            TaskProvider<GenerateSRG> genSrg = extension.getReobfMappings().equals("notch") ? createMcpToObf : createMcpToSrg;
+            TaskProvider<GenerateSRG> genSrg = extension.getReobfMappings().isNotch() ? createMcpToObf : createMcpToSrg;
 
             RenameJarInPlace reobfJar  = reobf.create("jar");
             reobfJar.dependsOn(createMcpToSrg, createMcpToObf); // Generate mappings for both formats regardless

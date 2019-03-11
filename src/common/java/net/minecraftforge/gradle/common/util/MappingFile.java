@@ -52,6 +52,22 @@ public class MappingFile {
         }
     }
 
+    public enum Mapping {
+        MCP, SEARGE, NOTCH;
+
+        public final boolean isNotch() {
+            return this == NOTCH;
+        }
+
+        public static Mapping get(String value) {
+            try {
+                return Mapping.valueOf(value.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        }
+    }
+
     private static final Joiner SPACE = Joiner.on(" ");
     private static final Pattern DESC = Pattern.compile("L(?<cls>[^;]+);");
 

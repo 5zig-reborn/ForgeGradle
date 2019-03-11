@@ -39,7 +39,7 @@ public class GenerateSRG extends DefaultTask {
     private boolean reverse;
     private File output = getProject().file("build/" + getName() + "/output.tsrg");
     private File outputSRG = withExtension(this.output, "srg");
-    private String targetMappings;
+    private MappingFile.Mapping target;
 
     @TaskAction
     public void apply() throws IOException {
@@ -52,7 +52,7 @@ public class GenerateSRG extends DefaultTask {
         MappingFile ret = new MappingFile();
         McpNames map = McpNames.load(names);
 
-        if (isNotch()) {
+        if (getTarget().isNotch()) {
             obf_to_srg.getPackages().forEach(e -> ret.addPackage(e.getOriginal(), e.getMapped()));
             obf_to_srg.getClasses().forEach(cls -> {
                 ret.addClass(cls.getOriginal(), cls.getMapped());
@@ -90,10 +90,6 @@ public class GenerateSRG extends DefaultTask {
         return new File(file.getParent(), name + "." + extension);
     }
 
-    private boolean isNotch() {
-        return getTargetMappings().equals("notch");
-    }
-
     @InputFile
     public File getSrg() {
         return srg;
@@ -111,11 +107,11 @@ public class GenerateSRG extends DefaultTask {
     }
 
     @Input
-    public String getTargetMappings() {
-        return targetMappings;
+    public MappingFile.Mapping getTarget() {
+        return target;
     }
-    public void setTargetMappings(String value) {
-        this.targetMappings = value;
+    public void setTarget(MappingFile.Mapping value) {
+        this.target = value;
     }
 
     @Input
