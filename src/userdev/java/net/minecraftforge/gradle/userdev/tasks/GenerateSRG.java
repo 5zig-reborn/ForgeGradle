@@ -138,4 +138,9 @@ public class GenerateSRG extends DefaultTask {
         this.output = value;
         this.outputSRG = withExtension(this.output, "srg");
     }
+
+    @OutputFile
+    public File getOutputSRG() {
+        return outputSRG;
+    }
 }
